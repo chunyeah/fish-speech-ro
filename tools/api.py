@@ -189,7 +189,17 @@ def inference(req: ServeTTSRequest):
             read_ref_text(str(ref_audio.with_suffix(".lab")))
             for ref_audio in ref_audios
         ]
-
+    elif req.ro_references is not None:
+        audio_url = req.ro_references.check_prompt_audio_url()
+        prompt_text = req.ro_references.prompt_text
+        if audio_url is not None and prompt_text is not None:
+            prompt_token = encode_reference(
+                    decoder_model=decoder_model,
+                    reference_audio=audio_to_bytes(str(audio_url)),
+                    enable_reference_audio=True
+                )
+            prompt_tokens = [prompt_token]
+            prompt_texts = [prompt_text]
     else:
         # Parse reference audio aka prompt
         refs = req.references
