@@ -6,7 +6,7 @@ DATE=$(date +%Y%m%d)
 COMMIT_HASH=$(git rev-parse HEAD | cut -c 1-7)
 
 # 构建 full 版本的镜像
-docker build -t chunyeah/fish-speech:latest .
+docker buildx build --platform linux/amd64 -t chunyeah/fish-speech:latest .
 # 为同一个镜像添加带日期的标签
 docker tag chunyeah/fish-speech:latest chunyeah/fish-speech:dev-$DATE
 # 为同一个镜像添加带当前代码库Commit哈希值的标签
