@@ -190,6 +190,7 @@ def inference(req: ServeTTSRequest):
             for ref_audio in ref_audios
         ]
     elif req.ro_references is not None:
+        print(req.ro_references)
         audio_url = req.ro_references.check_prompt_audio_url()
         prompt_text = req.ro_references.prompt_text
         if audio_url is not None and prompt_text is not None:
@@ -367,7 +368,7 @@ def parse_args():
     parser.add_argument("--half", action="store_true")
     parser.add_argument("--compile", action="store_true")
     parser.add_argument("--max-text-length", type=int, default=0)
-    parser.add_argument("--listen", type=str, default="127.0.0.1:8080")
+    parser.add_argument("--listen", type=str, default="0.0.0.0:7862")
     parser.add_argument("--workers", type=int, default=1)
 
     return parser.parse_args()
