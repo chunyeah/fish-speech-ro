@@ -306,7 +306,13 @@ async def api_invoke_model(
     if args.max_text_length > 0 and len(req.text) > args.max_text_length:
         raise HTTPException(
             HTTPStatus.BAD_REQUEST,
-            content=f"Text is too long, max length is {args.max_text_length}",
+            content=f"Text length is unvalid, max length is {args.max_text_length}",
+        )
+    
+    if len(req.text) == 0:
+        raise HTTPException(
+            HTTPStatus.BAD_REQUEST,
+            content=f"Text length is unvalid, now length is 0.",
         )
 
     if req.streaming and req.format != "wav":
@@ -367,7 +373,7 @@ def parse_args():
     parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--half", action="store_true")
     parser.add_argument("--compile", action="store_true")
-    parser.add_argument("--max-text-length", type=int, default=0)
+    parser.add_argument("--max-text-length", type=int, default=1024)
     parser.add_argument("--listen", type=str, default="0.0.0.0:7862")
     parser.add_argument("--workers", type=int, default=1)
 
