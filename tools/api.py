@@ -1,15 +1,13 @@
-import base64
 import io
-import json
+import os
 import queue
-import random
 import sys
 import traceback
 import wave
 from argparse import ArgumentParser
 from http import HTTPStatus
 from pathlib import Path
-from typing import Annotated, Any, Literal, Optional
+from typing import Annotated, Any
 
 import numpy as np
 import ormsgpack
@@ -31,15 +29,14 @@ from kui.asgi import (
 )
 from kui.asgi.routing import MultimethodRoutes
 from loguru import logger
-from pydantic import BaseModel, Field, conint
 
 pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
 # from fish_speech.models.vqgan.lit_module import VQGAN
 from fish_speech.models.vqgan.modules.firefly import FireflyArchitecture
 from fish_speech.text.chn_text_norm.text import Text as ChnNormedText
-from fish_speech.utils import autocast_exclude_mps
-from tools.commons import ServeReferenceAudio, ServeTTSRequest
+from fish_speech.utils import autocast_exclude_mps, set_seed
+from tools.commons import ServeTTSRequest
 from tools.file import AUDIO_EXTENSIONS, audio_to_bytes, list_files, read_ref_text
 from tools.llama.generate import (
     GenerateRequest,
@@ -48,6 +45,14 @@ from tools.llama.generate import (
     launch_thread_safe_queue,
 )
 from tools.vqgan.inference import load_model as load_decoder_model
+
+backends = torchaudio.list_audio_backends()
+if "sox" in backends:
+    backend = "sox"
+elif "ffmpeg" in backends:
+    backend = "ffmpeg"
+else:
+    backend = "soundfile"
 
 
 def wav_chunk_header(sample_rate=44100, bit_depth=16, channels=1):
@@ -91,9 +96,7 @@ def load_audio(reference_audio, sr):
         audio_data = reference_audio
         reference_audio = io.BytesIO(audio_data)
 
-    waveform, original_sr = torchaudio.load(
-        reference_audio, backend="ffmpeg" if sys.platform == "linux" else "soundfile"
-    )
+    waveform, original_sr = torchaudio.load(reference_audio, backend=backend)
 
     if waveform.shape[0] > 1:
         waveform = torch.mean(waveform, dim=0, keepdim=True)
@@ -170,6 +173,8 @@ def get_content_type(audio_format):
 @torch.inference_mode()
 def inference(req: ServeTTSRequest):
 
+    global prompt_tokens, prompt_texts
+
     idstr: str | None = req.reference_id
     if idstr is not None:
         ref_folder = Path("references") / idstr
@@ -177,18 +182,24 @@ def inference(req: ServeTTSRequest):
         ref_audios = list_files(
             ref_folder, AUDIO_EXTENSIONS, recursive=True, sort=False
         )
-        prompt_tokens = [
-            encode_reference(
-                decoder_model=decoder_model,
-                reference_audio=audio_to_bytes(str(ref_audio)),
-                enable_reference_audio=True,
-            )
-            for ref_audio in ref_audios
-        ]
-        prompt_texts = [
-            read_ref_text(str(ref_audio.with_suffix(".lab")))
-            for ref_audio in ref_audios
-        ]
+
+        if req.use_memory_cache == "never" or (
+            req.use_memory_cache == "on-demand" and len(prompt_tokens) == 0
+        ):
+            prompt_tokens = [
+                encode_reference(
+                    decoder_model=decoder_model,
+                    reference_audio=audio_to_bytes(str(ref_audio)),
+                    enable_reference_audio=True,
+                )
+                for ref_audio in ref_audios
+            ]
+            prompt_texts = [
+                read_ref_text(str(ref_audio.with_suffix(".lab")))
+                for ref_audio in ref_audios
+            ]
+        else:
+            logger.info("Use same references")
     elif req.ro_references is not None:
         print(req.ro_references)
         audio_url = req.ro_references.check_prompt_audio_url()
@@ -204,17 +215,25 @@ def inference(req: ServeTTSRequest):
     else:
         # Parse reference audio aka prompt
         refs = req.references
-        if refs is None:
-            refs = []
-        prompt_tokens = [
-            encode_reference(
-                decoder_model=decoder_model,
-                reference_audio=ref.audio,
-                enable_reference_audio=True,
-            )
-            for ref in refs
-        ]
-        prompt_texts = [ref.text for ref in refs]
+
+        if req.use_memory_cache == "never" or (
+            req.use_memory_cache == "on-demand" and len(prompt_tokens) == 0
+        ):
+            prompt_tokens = [
+                encode_reference(
+                    decoder_model=decoder_model,
+                    reference_audio=ref.audio,
+                    enable_reference_audio=True,
+                )
+                for ref in refs
+            ]
+            prompt_texts = [ref.text for ref in refs]
+        else:
+            logger.info("Use same references")
+
+    if req.seed is not None:
+        set_seed(req.seed)
+        logger.warning(f"set seed: {req.seed}")
 
     # LLAMA Inference
     request = dict(
@@ -384,18 +403,26 @@ def parse_args():
 openapi = OpenAPI(
     {
         "title": "Fish Speech API",
+        "version": "1.4.2",
     },
 ).routes
 
 
 class MsgPackRequest(HttpRequest):
-    async def data(self) -> Annotated[Any, ContentType("application/msgpack")]:
+    async def data(
+        self,
+    ) -> Annotated[
+        Any, ContentType("application/msgpack"), ContentType("application/json")
+    ]:
         if self.content_type == "application/msgpack":
             return ormsgpack.unpackb(await self.body)
 
+        elif self.content_type == "application/json":
+            return await self.json
+
         raise HTTPException(
             HTTPStatus.UNSUPPORTED_MEDIA_TYPE,
-            headers={"Accept": "application/msgpack"},
+            headers={"Accept": "application/msgpack, application/json"},
         )
 
 
@@ -410,11 +437,23 @@ app = Kui(
 )
 
 
-if __name__ == "__main__":
+# Each worker process created by Uvicorn has its own memory space,
+# meaning that models and variables are not shared between processes.
+# Therefore, any global variables (like `llama_queue` or `decoder_model`)
+# will not be shared across workers.
 
-    import uvicorn
 
-    args = parse_args()
+# Multi-threading for deep learning can cause issues, such as inconsistent
+# outputs if multiple threads access the same buffers simultaneously.
+# Instead, it's better to use multiprocessing or independent models per thread.
+@app.on_startup
+def initialize_app(app: Kui):
+
+    global args, llama_queue, decoder_model, prompt_tokens, prompt_texts
+
+    prompt_tokens, prompt_texts = [], []
+
+    args = parse_args()  # args same as ones in other processes
     args.precision = torch.half if args.half else torch.bfloat16
 
     logger.info("Loading Llama model...")
@@ -424,6 +463,7 @@ if __name__ == "__main__":
         precision=args.precision,
         compile=args.compile,
     )
+
     logger.info("Llama model loaded, loading VQ-GAN model...")
 
     decoder_model = load_decoder_model(
@@ -434,7 +474,7 @@ if __name__ == "__main__":
 
     logger.info("VQ-GAN model loaded, warming up...")
 
-    # Dry run to check if the model is loaded correctly and avoid the first-time latency
+    # Dry run to ensure models work and avoid first-time latency
     list(
         inference(
             ServeTTSRequest(
@@ -453,5 +493,18 @@ if __name__ == "__main__":
     )
 
     logger.info(f"Warming up done, starting server at http://{args.listen}")
+
+
+if __name__ == "__main__":
+
+    import uvicorn
+
+    args = parse_args()
     host, port = args.listen.split(":")
-    uvicorn.run(app, host=host, port=int(port), workers=args.workers, log_level="info")
+    uvicorn.run(
+        "tools.api:app",
+        host=host,
+        port=int(port),
+        workers=args.workers,
+        log_level="info",
+    )

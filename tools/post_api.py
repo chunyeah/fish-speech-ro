@@ -33,7 +33,7 @@ def parse_args():
         "-id",
         type=str,
         default=None,
-        help="ID of the reference model o be used for the speech",
+        help="ID of the reference model to be used for the speech",
     )
     parser.add_argument(
         "--reference_audio",
@@ -103,6 +103,18 @@ def parse_args():
         "--channels", type=int, default=1, help="Number of audio channels"
     )
     parser.add_argument("--rate", type=int, default=44100, help="Sample rate for audio")
+    parser.add_argument(
+        "--use_memory_cache",
+        type=str,
+        default="never",
+        help="Cache encoded references codes in memory",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="None means randomized inference, otherwise deterministic",
+    )
 
     return parser.parse_args()
 
@@ -148,6 +160,8 @@ if __name__ == "__main__":
         "speaker": args.speaker,
         "emotion": args.emotion,
         "streaming": args.streaming,
+        "use_memory_cache": args.use_memory_cache,
+        "seed": args.seed,
     }
 
     pydantic_data = ServeTTSRequest(**data)

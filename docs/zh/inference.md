@@ -114,8 +114,11 @@ python -m tools.post_api \
 
 上面的命令表示按照多个参考音频的信息，合成所需的`MP3`格式音频，并保存为当前目录的`generated.mp3`文件。
 
+还可以用`--reference_id`(仅能用一个)来代替`--reference_audio`和`--reference_text`, 前提是在项目根目录下创建`references/<your reference_id>`文件夹，
+里面放上任意对音频与标注文本。 目前支持的参考音频最多加起来总时长90s。
+
 ## GUI 推理 
-[下载客户端](https://github.com/AnyaCoder/fish-speech-gui/releases/tag/v0.1.0)
+[下载客户端](https://github.com/AnyaCoder/fish-speech-gui/releases)
 
 ## WebUI 推理
 
@@ -129,7 +132,7 @@ python -m tools.webui \
 ```
 
 !!! note
-    你可以提前将label文件和参考音频文件保存到主目录下的examples文件夹（需要自行创建），这样你可以直接在WebUI中调用它们。
+    你可以提前将label文件和参考音频文件保存到主目录下的 `references` 文件夹（需要自行创建），这样你可以直接在WebUI中调用它们。
 
 !!! note
     你可以使用 Gradio 环境变量, 如 `GRADIO_SHARE`, `GRADIO_SERVER_PORT`, `GRADIO_SERVER_NAME` 来配置 WebUI.

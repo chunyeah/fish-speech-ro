@@ -1,7 +1,7 @@
 <div align="center">
 <h1>Fish Speech</h1>
 
-**English** | [简体中文](docs/README.zh.md) | [Portuguese](docs/README.pt-BR.md) | [日本語](docs/README.ja.md) <br>
+[English](../README.md) | **简体中文** | [Portuguese](README.pt-BR.md) | [日本語](README.ja.md) <br>
 
 <a href="https://www.producthunt.com/posts/fish-speech-1-4?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-fish&#0045;speech&#0045;1&#0045;4" target="_blank">
     <img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=488440&theme=light" alt="Fish&#0032;Speech&#0032;1&#0046;4 - Open&#0045;Source&#0032;Multilingual&#0032;Text&#0045;to&#0045;Speech&#0032;with&#0032;Voice&#0032;Cloning | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" />
@@ -29,61 +29,60 @@
     <a target="_blank" href="https://huggingface.co/spaces/fishaudio/fish-speech-1">
         <img alt="Huggingface" src="https://img.shields.io/badge/🤗%20-space%20demo-yellow"/>
     </a>
+    <br>
+
 </div>
 
-This codebase and all models are released under CC-BY-NC-SA-4.0 License. Please refer to [LICENSE](LICENSE) for more details.
+此代码库及模型根据 CC-BY-NC-SA-4.0 许可证发布。请参阅 [LICENSE](LICENSE) 了解更多细节.
 
 ---
 
-## Features
+## 特性
 
-1. **Zero-shot & Few-shot TTS:** Input a 10 to 30-second vocal sample to generate high-quality TTS output. **For detailed guidelines, see [Voice Cloning Best Practices](https://docs.fish.audio/text-to-speech/voice-clone-best-practices).**
+1. **零样本 & 小样本 TTS**：输入 10 到 30 秒的声音样本即可生成高质量的 TTS 输出。**详见 [语音克隆最佳实践指南](https://docs.fish.audio/text-to-speech/voice-clone-best-practices)。**
+2. **多语言 & 跨语言支持**：只需复制并粘贴多语言文本到输入框中，无需担心语言问题。目前支持英语、日语、韩语、中文、法语、德语、阿拉伯语和西班牙语。
+3. **无音素依赖**：模型具备强大的泛化能力，不依赖音素进行 TTS，能够处理任何文字表示的语言。
+4. **高准确率**：在 5 分钟的英文文本上，达到了约 2% 的 CER（字符错误率）和 WER（词错误率）。
+5. **快速**：通过 fish-tech 加速，在 Nvidia RTX 4060 笔记本上的实时因子约为 1:5，在 Nvidia RTX 4090 上约为 1:15。
+6. **WebUI 推理**：提供易于使用的基于 Gradio 的网页用户界面，兼容 Chrome、Firefox、Edge 等浏览器。
+7. **GUI 推理**：提供 PyQt6 图形界面，与 API 服务器无缝协作。支持 Linux、Windows 和 macOS。[查看 GUI](https://github.com/AnyaCoder/fish-speech-gui)。
+8. **易于部署**：轻松设置推理服务器，原生支持 Linux、Windows 和 macOS，最大程度减少速度损失。
 
-2. **Multilingual & Cross-lingual Support:** Simply copy and paste multilingual text into the input box—no need to worry about the language. Currently supports English, Japanese, Korean, Chinese, French, German, Arabic, and Spanish.
+## 免责声明
 
-3. **No Phoneme Dependency:** The model has strong generalization capabilities and does not rely on phonemes for TTS. It can handle text in any language script.
+我们不对代码库的任何非法使用承担任何责任. 请参阅您当地关于 DMCA (数字千年法案) 和其他相关法律法规.
 
-4. **Highly Accurate:** Achieves a low CER (Character Error Rate) and WER (Word Error Rate) of around 2% for 5-minute English texts.
-
-5. **Fast:** With fish-tech acceleration, the real-time factor is approximately 1:5 on an Nvidia RTX 4060 laptop and 1:15 on an Nvidia RTX 4090.
-
-6. **WebUI Inference:** Features an easy-to-use, Gradio-based web UI compatible with Chrome, Firefox, Edge, and other browsers.
-
-7. **GUI Inference:** Offers a PyQt6 graphical interface that works seamlessly with the API server. Supports Linux, Windows, and macOS. [See GUI](https://github.com/AnyaCoder/fish-speech-gui).
-
-8. **Deploy-Friendly:** Easily set up an inference server with native support for Linux, Windows and MacOS, minimizing speed loss.
-
-## Disclaimer
-
-We do not hold any responsibility for any illegal usage of the codebase. Please refer to your local laws about DMCA and other related laws.
-
-## Online Demo
+## 在线 DEMO
 
 [Fish Audio](https://fish.audio)
 
-## Quick Start for Local Inference
+## 快速开始本地推理
 
 [inference.ipynb](/inference.ipynb)
 
-## Videos
+## 视频
 
-#### V1.4 Demo Video: [Youtube](https://www.youtube.com/watch?v=Ghc8cJdQyKQ)
+#### 1.4 介绍: https://www.bilibili.com/video/BV1pu46eVEk7
 
-## Documents
+#### 1.2 介绍: https://www.bilibili.com/video/BV1wz421B71D
+
+#### 1.1 介绍: https://www.bilibili.com/video/BV1zJ4m1K7cj
+
+## 文档
 
 - [English](https://speech.fish.audio/)
 - [中文](https://speech.fish.audio/zh/)
 - [日本語](https://speech.fish.audio/ja/)
 - [Portuguese (Brazil)](https://speech.fish.audio/pt/)
 
-## Samples (2024/10/02 V1.4)
+## 例子 (2024/10/02 V1.4)
 
 - [English](https://speech.fish.audio/samples/)
 - [中文](https://speech.fish.audio/zh/samples/)
 - [日本語](https://speech.fish.audio/ja/samples/)
 - [Portuguese (Brazil)](https://speech.fish.audio/pt/samples/)
 
-## Credits
+## 鸣谢
 
 - [VITS2 (daniilrobnikov)](https://github.com/daniilrobnikov/vits2)
 - [Bert-VITS2](https://github.com/fishaudio/Bert-VITS2)
@@ -92,19 +91,19 @@ We do not hold any responsibility for any illegal usage of the codebase. Please 
 - [GPT Fast](https://github.com/pytorch-labs/gpt-fast)
 - [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)
 
-## Sponsor
+## 赞助
 
 <div>
   <a href="https://6block.com/">
     <img src="https://avatars.githubusercontent.com/u/60573493" width="100" height="100" alt="6Block Avatar"/>
   </a>
   <br>
-  <a href="https://6block.com/">Data Processing sponsor by 6Block</a>
+  <a href="https://6block.com/">数据处理服务器由 6Block 提供</a>
 </div>
 <div>
   <a href="https://www.lepton.ai/">
     <img src="https://www.lepton.ai/favicons/apple-touch-icon.png" width="100" height="100" alt="Lepton Avatar"/>
   </a>
   <br>
-  <a href="https://www.lepton.ai/">Fish Audio is served on Lepton.AI</a>
+  <a href="https://www.lepton.ai/">Fish Audio 在线推理与 Lepton 合作</a>
 </div>
