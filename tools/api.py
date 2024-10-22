@@ -207,7 +207,7 @@ def inference(req: ServeTTSRequest):
         if audio_url is not None and prompt_text is not None:
             prompt_token = encode_reference(
                     decoder_model=decoder_model,
-                    reference_audio=audio_to_bytes(str(audio_url)),
+                    reference_audio=audio_url,
                     enable_reference_audio=True
                 )
             prompt_tokens = [prompt_token]
