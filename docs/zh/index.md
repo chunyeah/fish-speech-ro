@@ -12,7 +12,7 @@
 </a>
 </div>
 
-!!! warning
+!!! warning "警告"
     我们不对代码库的任何非法使用承担任何责任. 请参阅您当地关于 DMCA (数字千年法案) 和其他相关法律法规. <br/>
     此代码库与所有模型根据 CC-BY-NC-SA-4.0 许可证发布.
 
@@ -176,13 +176,13 @@ pip install -e .[stable]
     确保您在 docker 容器内的终端，然后再从我们的 huggingface 仓库下载所需的 `vqgan` 和 `llama` 模型。
 
     ```bash
-    huggingface-cli download fishaudio/fish-speech-1.4 --local-dir checkpoints/fish-speech-1.4
+    huggingface-cli download fishaudio/fish-speech-1.5 --local-dir checkpoints/fish-speech-1.5
     ```
 
     对于中国大陆用户，可以通过镜像站下载。
 
     ```bash
-    HF_ENDPOINT=https://hf-mirror.com huggingface-cli download fishaudio/fish-speech-1.4 --local-dir checkpoints/fish-speech-1.4
+    HF_ENDPOINT=https://hf-mirror.com huggingface-cli download fishaudio/fish-speech-1.5 --local-dir checkpoints/fish-speech-1.5
     ```
 
 4. 配置环境变量，访问 WebUI

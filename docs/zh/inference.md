@@ -15,13 +15,13 @@
 从我们的 huggingface 仓库下载所需的 `vqgan` 和 `llama` 模型。
 
 ```bash
-huggingface-cli download fishaudio/fish-speech-1.4 --local-dir checkpoints/fish-speech-1.4
+huggingface-cli download fishaudio/fish-speech-1.5 --local-dir checkpoints/fish-speech-1.5
 ```
 
 对于中国大陆用户，可使用 mirror 下载。
 
 ```bash
-HF_ENDPOINT=https://hf-mirror.com huggingface-cli download fishaudio/fish-speech-1.4 --local-dir checkpoints/fish-speech-1.4
+HF_ENDPOINT=https://hf-mirror.com huggingface-cli download fishaudio/fish-speech-1.5 --local-dir checkpoints/fish-speech-1.5
 ```
 
 ### 1. 从语音生成 prompt:
@@ -32,7 +32,7 @@ HF_ENDPOINT=https://hf-mirror.com huggingface-cli download fishaudio/fish-speech
 ```bash
 python tools/vqgan/inference.py \
     -i "paimon.wav" \
-    --checkpoint-path "checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth"
+    --checkpoint-path "checkpoints/fish-speech-1.5/firefly-gan-vq-fsq-8x1024-21hz-generator.pth"
 ```
 
 你应该能得到一个 `fake.npy` 文件.
@@ -44,7 +44,7 @@ python tools/llama/generate.py \
     --text "要转换的文本" \
     --prompt-text "你的参考文本" \
     --prompt-tokens "fake.npy" \
-    --checkpoint-path "checkpoints/fish-speech-1.4" \
+    --checkpoint-path "checkpoints/fish-speech-1.5" \
     --num-samples 2 \
     --compile
 ```
@@ -65,7 +65,7 @@ python tools/llama/generate.py \
 ```bash
 python tools/vqgan/inference.py \
     -i "codes_0.npy" \
-    --checkpoint-path "checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth"
+    --checkpoint-path "checkpoints/fish-speech-1.5/firefly-gan-vq-fsq-8x1024-21hz-generator.pth"
 ```
 
 ## HTTP API 推理
@@ -75,11 +75,11 @@ python tools/vqgan/inference.py \
 ```bash
 python -m tools.api \
     --listen 0.0.0.0:8080 \
-    --llama-checkpoint-path "checkpoints/fish-speech-1.4" \
-    --decoder-checkpoint-path "checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth" \
+    --llama-checkpoint-path "checkpoints/fish-speech-1.5" \
+    --decoder-checkpoint-path "checkpoints/fish-speech-1.5/firefly-gan-vq-fsq-8x1024-21hz-generator.pth" \
     --decoder-config-name firefly_gan_vq
 ```
-如果你想要加速推理，可以加上`--compile`参数。
+> 如果你想要加速推理，可以加上`--compile`参数。
 
 推荐中国大陆用户运行以下命令来启动 HTTP 服务:
 ```bash
@@ -100,8 +100,7 @@ python -m tools.post_api \
 
 上面的命令表示按照参考音频的信息，合成所需的音频并流式返回.
 
-下面的示例展示了， 可以一次使用**多个** `参考音频路径` 和 `参考音频的文本内容`。在命令里用空格隔开即可。 
-
+下面的示例展示了， 可以一次使用**多个** `参考音频路径` 和 `参考音频的文本内容`。在命令里用空格隔开即可。
 ```bash
 python -m tools.post_api \
     --text "要输入的文本" \
@@ -117,6 +116,9 @@ python -m tools.post_api \
 还可以用`--reference_id`(仅能用一个)来代替`--reference_audio`和`--reference_text`, 前提是在项目根目录下创建`references/<your reference_id>`文件夹，
 里面放上任意对音频与标注文本。 目前支持的参考音频最多加起来总时长90s。
 
+!!! info
+    要了解有关可用参数的更多信息，可以使用命令`python -m tools.post_api -h`
+
 ## GUI 推理 
 [下载客户端](https://github.com/AnyaCoder/fish-speech-gui/releases)
 
@@ -126,10 +128,11 @@ python -m tools.post_api \
 
 ```bash
 python -m tools.webui \
-    --llama-checkpoint-path "checkpoints/fish-speech-1.4" \
-    --decoder-checkpoint-path "checkpoints/fish-speech-1.4/firefly-gan-vq-fsq-8x1024-21hz-generator.pth" \
+    --llama-checkpoint-path "checkpoints/fish-speech-1.5" \
+    --decoder-checkpoint-path "checkpoints/fish-speech-1.5/firefly-gan-vq-fsq-8x1024-21hz-generator.pth" \
     --decoder-config-name firefly_gan_vq
 ```
+> 如果你想要加速推理，可以加上`--compile`参数。
 
 !!! note
     你可以提前将label文件和参考音频文件保存到主目录下的 `references` 文件夹（需要自行创建），这样你可以直接在WebUI中调用它们。
